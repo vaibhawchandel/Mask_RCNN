@@ -83,7 +83,7 @@ def apply_mask(image, mask, color, alpha=0.5):
 
 
 def display_instances(image, boxes, masks, class_ids, class_names,
-                      scores=None, title="",
+                      scores=None, output_name=None, title="",
                       figsize=(16, 16), ax=None,
                       show_mask=True, show_bbox=True,
                       colors=None, captions=None):
@@ -165,7 +165,13 @@ def display_instances(image, boxes, masks, class_ids, class_names,
             verts = np.fliplr(verts) - 1
             p = Polygon(verts, facecolor="none", edgecolor=color)
             ax.add_patch(p)
-    ax.imshow(masked_image.astype(np.uint8))
+
+    masked_image = masked_image.astype(np.uint8)
+    ax.imshow(masked_image)
+    plt.tight_layout()
+    if output_name:
+        plt.draw()
+        plt.savefig(output_name, bbox_inches='tight')
     if auto_show:
         plt.show()
 

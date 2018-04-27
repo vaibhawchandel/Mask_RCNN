@@ -76,10 +76,12 @@ results = model.detect([image], verbose=1)
 
 # Visualize results
 r = results[0]
-# visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], 
-#                             class_names, r['scores'])
-
-
 out_image_name = os.path.join(ROOT_DIR, 'results', image_name)
-visualize.save_image(image, out_image_name, r['rois'], r['masks'],
-    r['class_ids'], r['scores'], class_names, scores_thresh=0.9, mode=0)
+print('processing: {}'.format(image_name))
+
+visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], 
+                            class_names, scores=r['scores'], output_name=out_image_name)
+print('output: {}'.format(out_image_name))
+
+# visualize.save_image(image, out_image_name, r['rois'], r['masks'],
+#     r['class_ids'], r['scores'], class_names, scores_thresh=0.9, mode=0)
