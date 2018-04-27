@@ -65,24 +65,29 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
                'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors',
                'teddy bear', 'hair drier', 'toothbrush']
 
+if __name__ == '__main__':
+    try:
+        image_path = sys.argv[1]
+        image_name = os.path.basename(image_path)
+        IMAGE_DIR = os.path.dirname(image_path)
+    except IndexError:
+        file_names = next(os.walk(IMAGE_DIR))[2]
+        image_name = random.choice(file_names)
 
-# Load a random image from the images folder
-file_names = next(os.walk(IMAGE_DIR))[2]
-image_name = random.choice(file_names)
-image = skimage.io.imread(os.path.join(IMAGE_DIR, image_name))
+    image = skimage.io.imread(os.path.join(IMAGE_DIR, image_name))
 
-# Run detection
-results = model.detect([image], verbose=1)
+    # Run detection
+    results = model.detect([image], verbose=1)
 
-# Visualize results
-r = results[0]
-out_image_name = os.path.join(ROOT_DIR, 'results', image_name)
-print('processing: {}'.format(image_name))
+    # Visualize results
+    r = results[0]
+    out_image_name = os.path.join(ROOT_DIR, 'results', image_name)
+    print('processing: {}'.format(image_name))
 
-visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], 
-                            class_names, scores=r['scores'], auto_show=False,
-                            output_name=out_image_name)
-print('output: {}'.format(out_image_name))
+    visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], 
+                                class_names, scores=r['scores'], auto_show=False,
+                                output_name=out_image_name)
+    print('output: {}'.format(out_image_name))
 
-# visualize.save_image(image, out_image_name, r['rois'], r['masks'],
-#     r['class_ids'], r['scores'], class_names, scores_thresh=0.9, mode=0)
+    # visualize.save_image(image, out_image_name, r['rois'], r['masks'],
+    #     r['class_ids'], r['scores'], class_names, scores_thresh=0.9, mode=0)
