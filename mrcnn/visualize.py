@@ -84,7 +84,7 @@ def apply_mask(image, mask, color, alpha=0.5):
 
 def display_instances(image, boxes, masks, class_ids, class_names,
                       scores=None, output_name=None, title="",
-                      figsize=(16, 16), ax=None,
+                      figsize=(16, 16), ax=None, auto_show=True,
                       show_mask=True, show_bbox=True,
                       colors=None, captions=None):
     """
@@ -107,10 +107,8 @@ def display_instances(image, boxes, masks, class_ids, class_names,
         assert boxes.shape[0] == masks.shape[-1] == class_ids.shape[0]
 
     # If no axis is passed, create one and automatically call show()
-    auto_show = False
     if not ax:
         _, ax = plt.subplots(1, figsize=figsize)
-        auto_show = True
 
     # Generate random colors
     colors = colors or random_colors(N)

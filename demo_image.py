@@ -80,7 +80,8 @@ out_image_name = os.path.join(ROOT_DIR, 'results', image_name)
 print('processing: {}'.format(image_name))
 
 visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], 
-                            class_names, scores=r['scores'], output_name=out_image_name)
+                            class_names, scores=r['scores'], auto_show=False,
+                            output_name=out_image_name)
 print('output: {}'.format(out_image_name))
 
 # visualize.save_image(image, out_image_name, r['rois'], r['masks'],
