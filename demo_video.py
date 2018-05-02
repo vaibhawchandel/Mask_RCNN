@@ -48,7 +48,7 @@ def create_video(video_name, output_dir):
 
     height, width = im.shape[0:2]
 
-    fourcc = cv2.cv.CV_FOURCC(*'XVID')
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
     # fourcc = cv2.cv.CV_FOURCC('M', 'P', '4', 'V')
     out = cv2.VideoWriter(video_path, fourcc, 5.0, (width, height), isColor=True)
     total = len(indices_int)
@@ -81,7 +81,7 @@ def demo_video(video_path, output_dir, framerate=5):
 
     cap = cv2.VideoCapture(video_path)
     count = 0
-    success = True
+    success = False # True
     while success:
         # Capture frame-by-frame
         success, frame = cap.read()
