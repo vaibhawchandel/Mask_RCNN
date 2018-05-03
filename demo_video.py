@@ -28,6 +28,7 @@ def get_framerate(video_path):
         print("Frames per second for OpenCV v2: {0}".format(fps))
     cap.release()
     fps = round(fps)
+    return fps
 
 def get_framerate_bash(video_path):
     command = "ffprobe " + video_path + " -v 0 -select_streams v -print_format flat -show_entries stream=r_frame_rate"
@@ -70,9 +71,10 @@ def create_video(video_name, output_dir):
     cv2.destroyAllWindows()
     print('video saved to: {}'.format(video_path))
 
-def demo_video(video_path, output_dir, framerate=5):
+
+def demo_video(video_path, output_dir, framerate=5, max_dim=400):
     colors = np.random.rand(32, 3)
-    original_framerate = 30  # get_framerate(video_path)
+    original_framerate = get_framerate(video_path)
     interval = int(original_framerate / framerate)
     print((original_framerate, framerate, interval))
     if interval < 1:
@@ -81,7 +83,7 @@ def demo_video(video_path, output_dir, framerate=5):
 
     cap = cv2.VideoCapture(video_path)
     count = 0
-    success = False # True
+    success = True
     while success:
         # Capture frame-by-frame
         success, frame = cap.read()
@@ -92,6 +94,10 @@ def demo_video(video_path, output_dir, framerate=5):
             # cv2.imshow('frame', frame)
             # cv2.imwrite(os.path.join(frames_folder, image_name), frame)
             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = image.shape
+            resize_ratio = max(h, w)/(max_dim*1.0)
+            image = cv2.resize(image, None, fx=resize_ratio, fy=resize_ratio)
+            # print(image.shape)
             # Run detection
             results = model.detect([image], verbose=1)
 
@@ -172,12 +178,14 @@ if __name__ == '__main__':
                    'teddy bear', 'hair drier', 'toothbrush']
 
     video_path = sys.argv[1]
-    video_name = os.path.basename(video_path)
+    video_name = os.path.splitext(os.path.basename(video_path))[0]
     video_dir = os.path.dirname(video_path)
 
-    framerate = 5
-    output_dir = os.path.join(ROOT_DIR, 'results')
-    demo_video(video_path, output_dir, framerate)
+    framerate = 10
+    output_dir = os.path.join(ROOT_DIR, 'results', video_name)
+
+    os.makedirs(output_dir, exist_ok=True)
+    demo_video(video_path, output_dir, framerate, max_dim=400)
 
     # visualize.save_image(image, out_image_name, r['rois'], r['masks'],
     #     r['class_ids'], r['scores'], class_names, scores_thresh=0.9, mode=0)
