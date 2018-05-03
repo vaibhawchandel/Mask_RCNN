@@ -73,7 +73,7 @@ def create_video(video_name, output_dir):
     print('video saved to: {}'.format(video_path))
 
 
-def demo_video(video_path, output_dir, framerate=5, max_dim=400, batch_size=2):
+def demo_video(video_path, output_dir, framerate=5, max_dim=400, colors=None, batch_size=2):
     colors = np.random.rand(32, 3)
     original_framerate = get_framerate(video_path)
     interval = int(original_framerate / framerate)
@@ -115,7 +115,7 @@ def demo_video(video_path, output_dir, framerate=5, max_dim=400, batch_size=2):
 
                     visualize.display_instances(image_batch[i], r['rois'], r['masks'], r['class_ids'], 
                                         class_names, scores=r['scores'], auto_show=False,
-                                        output_name=out_image_name)
+                                        colors=colors, output_name=out_image_name)
                     print('output: {}'.format(out_image_name))
 
                 image_batch = []
@@ -190,6 +190,7 @@ if __name__ == '__main__':
                    'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors',
                    'teddy bear', 'hair drier', 'toothbrush']
 
+    colors = visualize.random_colors(len(class_names))
     video_path = sys.argv[1]
     video_name = os.path.splitext(os.path.basename(video_path))[0]
     video_dir = os.path.dirname(video_path)
@@ -199,7 +200,9 @@ if __name__ == '__main__':
 
     os.makedirs(output_dir, exist_ok=True)
     time_start = datetime.datetime.now().replace(microsecond=0)
-    demo_video(video_path, output_dir, framerate, max_dim=400, batch_size=config.BATCH_SIZE)
+    demo_video(video_path, output_dir, framerate=framerate, 
+                max_dim=400, colors=colors,
+                batch_size=config.BATCH_SIZE)
     time_end = datetime.datetime.now().replace(microsecond=0)
     print(time_end-time_start)
     # visualize.save_image(image, out_image_name, r['rois'], r['masks'],
