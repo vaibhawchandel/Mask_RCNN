@@ -172,7 +172,8 @@ def display_instances(image, boxes, masks, class_ids, class_names,
         plt.savefig(output_name, bbox_inches='tight')
     if auto_show:
         plt.show()
-
+    # to avoid memory leak while processing videos
+    plt.close()
 
 def display_differences(image,
                         gt_box, gt_class_id, gt_mask,

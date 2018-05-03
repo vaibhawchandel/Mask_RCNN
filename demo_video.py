@@ -11,6 +11,7 @@ import skimage.io
 import matplotlib.pyplot as plt
 import cv2
 
+import datetime
 import glob
 import json
 import subprocess
@@ -57,7 +58,7 @@ def create_video(video_name, output_dir):
         image_path = os.path.join(output_dir, '{}__{:05d}_detrack.jpg'.format(video_name, index))
         im = cv2.imread(image_path)
         # print image_path, im.shape
-        print('{}/{}'.format(i+1, total))
+        # print('{}/{}'.format(i+1, total))
         if im is None:
             print('image not found')
         # im_jpg = im[:, :, 0:3]
@@ -72,7 +73,7 @@ def create_video(video_name, output_dir):
     print('video saved to: {}'.format(video_path))
 
 
-def demo_video(video_path, output_dir, framerate=5, max_dim=400):
+def demo_video(video_path, output_dir, framerate=5, max_dim=400, batch_size=2):
     colors = np.random.rand(32, 3)
     original_framerate = get_framerate(video_path)
     interval = int(original_framerate / framerate)
@@ -84,6 +85,8 @@ def demo_video(video_path, output_dir, framerate=5, max_dim=400):
     cap = cv2.VideoCapture(video_path)
     count = 0
     success = True
+    image_batch = []
+    image_names = []
     while success:
         # Capture frame-by-frame
         success, frame = cap.read()
@@ -95,26 +98,36 @@ def demo_video(video_path, output_dir, framerate=5, max_dim=400):
             # cv2.imwrite(os.path.join(frames_folder, image_name), frame)
             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             h, w, ch = image.shape
-            resize_ratio = max(h, w)/(max_dim*1.0)
+            resize_ratio = (max_dim*1.0)/max(h, w)
             image = cv2.resize(image, None, fx=resize_ratio, fy=resize_ratio)
             # print(image.shape)
-            # Run detection
-            results = model.detect([image], verbose=1)
+            if len(image_batch) == batch_size:
+                # Run detection
+                results = model.detect(image_batch, verbose=1)
 
-            # Visualize results
-            r = results[0]
-            out_image_name = os.path.join(output_dir, os.path.splitext(image_name)[0] + '_detrack.jpg')
-            print('processing: {}'.format(image_name))
 
-            visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], 
+                
+                for i, r in enumerate(results):
+                    # Visualize results
+                    # r = results[0]
+                    out_image_name = os.path.join(output_dir, os.path.splitext(image_names[i])[0] + '_detrack.jpg')
+                    print('processing: {}'.format(image_names[i]))
+
+                    visualize.display_instances(image_batch[i], r['rois'], r['masks'], r['class_ids'], 
                                         class_names, scores=r['scores'], auto_show=False,
                                         output_name=out_image_name)
-            print('output: {}'.format(out_image_name))
+                    print('output: {}'.format(out_image_name))
+
+                image_batch = []
+                image_names = []
+            else:
+                image_batch.append(image)
+                image_names.append(image_name)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         count = count + 1
-
+    print('total frames processed: {}'.format(count))
     # When everything done, release the capture
     cap.release()
     # cv2.destroyAllWindows()
@@ -147,7 +160,7 @@ if __name__ == '__main__':
         # Set batch size to 1 since we'll be running inference on
         # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
         GPU_COUNT = 1
-        IMAGES_PER_GPU = 1
+        IMAGES_PER_GPU = 5
 
     config = InferenceConfig()
     config.display()
@@ -185,7 +198,9 @@ if __name__ == '__main__':
     output_dir = os.path.join(ROOT_DIR, 'results', video_name)
 
     os.makedirs(output_dir, exist_ok=True)
-    demo_video(video_path, output_dir, framerate, max_dim=400)
-
+    time_start = datetime.datetime.now().replace(microsecond=0)
+    demo_video(video_path, output_dir, framerate, max_dim=400, batch_size=config.BATCH_SIZE)
+    time_end = datetime.datetime.now().replace(microsecond=0)
+    print(time_end-time_start)
     # visualize.save_image(image, out_image_name, r['rois'], r['masks'],
     #     r['class_ids'], r['scores'], class_names, scores_thresh=0.9, mode=0)
