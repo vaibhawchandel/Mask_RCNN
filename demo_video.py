@@ -74,7 +74,7 @@ def create_video(video_name, output_dir):
 
 
 def demo_video(video_path, output_dir, framerate=5, max_dim=400, colors=None, batch_size=2):
-    colors = np.random.rand(32, 3)
+    # colors_some = np.random.rand(32, 3)
     original_framerate = get_framerate(video_path)
     interval = int(original_framerate / framerate)
     print((original_framerate, framerate, interval))
@@ -84,6 +84,7 @@ def demo_video(video_path, output_dir, framerate=5, max_dim=400, colors=None, ba
 
     cap = cv2.VideoCapture(video_path)
     count = 0
+    count_processed = 0
     success = True
     image_batch = []
     image_names = []
@@ -91,6 +92,7 @@ def demo_video(video_path, output_dir, framerate=5, max_dim=400, colors=None, ba
         # Capture frame-by-frame
         success, frame = cap.read()
         if success and (count % interval == 0):
+            count_processed += 1
             image_name = '{}__{:05d}.jpg'.format(video_name, count + 1)
             # print(image_name)
             # Display the resulting frame
@@ -104,8 +106,6 @@ def demo_video(video_path, output_dir, framerate=5, max_dim=400, colors=None, ba
             if len(image_batch) == batch_size:
                 # Run detection
                 results = model.detect(image_batch, verbose=1)
-
-
                 
                 for i, r in enumerate(results):
                     # Visualize results
@@ -127,7 +127,7 @@ def demo_video(video_path, output_dir, framerate=5, max_dim=400, colors=None, ba
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         count = count + 1
-    print('total frames processed: {}'.format(count))
+    print('total frames: {} processed: {}'.format(count, count_processed))
     # When everything done, release the capture
     cap.release()
     # cv2.destroyAllWindows()
@@ -160,7 +160,7 @@ if __name__ == '__main__':
         # Set batch size to 1 since we'll be running inference on
         # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
         GPU_COUNT = 1
-        IMAGES_PER_GPU = 5
+        IMAGES_PER_GPU = 1
 
     config = InferenceConfig()
     config.display()
@@ -190,12 +190,13 @@ if __name__ == '__main__':
                    'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors',
                    'teddy bear', 'hair drier', 'toothbrush']
 
-    colors = visualize.random_colors(len(class_names))
+    colors = visualize.random_colors(100)
+    print(len(colors))
     video_path = sys.argv[1]
     video_name = os.path.splitext(os.path.basename(video_path))[0]
     video_dir = os.path.dirname(video_path)
 
-    framerate = 10
+    framerate = 15
     output_dir = os.path.join(ROOT_DIR, 'results', video_name)
 
     os.makedirs(output_dir, exist_ok=True)
